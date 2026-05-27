@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="RunDogRun">
+  <meta name="theme-color" content="#FF6B00">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>RunDogRun</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+    :root {
+      --orange: #FF6B00;
+      --orange-light: #FF8C38;
+      --orange-glow: rgba(255, 107, 0, 0.3);
+      --bg: #FFF8F3;
+      --card: rgba(255,255,255,0.85);
+      --text: #1a1a1a;
+      --gray: #888;
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      overflow-x: hidden;
+    }
+
+    /* Background blobs */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -100px;
+      right: -100px;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(255,107,0,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -80px;
+      left: -80px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255,140,56,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      padding: calc(20px + var(--safe-top)) 24px calc(20px + var(--safe-bottom));
+      animation: fadeIn 0.4s ease;
+    }
+
+    .screen.active { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* WELCOME SCREEN */
+    .hero {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .dog-emoji {
+      font-size: 80px;
+      display: block;
+      margin-bottom: 16px;
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--orange);
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--gray);
+      margin-top: 6px;
+    }
+
+    .steps-card {
+      width: 100%;
+      max-width: 360px;
+      background: var(--card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid rgba(255,107,0,0.15);
+      box-shadow: 0 8px 32px rgba(255,107,0,0.1), 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 24px;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .step:last-child { border-bottom: none; }
+
+    .step-emoji {
+      font-size: 22px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .step-text h3 {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .step-text p {
+      font-size: 13px;
+      color: var(--gray);
+      margin-top: 2px;
+      font-weight: 600;
+    }
+
+    .btn {
+      width: 100%;
+      max-width: 360px;
+      height: 54px;
+      border: none;
+      border-radius: 16px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      -webkit-appearance: none;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--orange), var(--orange-light));
+      color: white;
+      box-shadow: 0 6px 24px var(--orange-glow), 0 2px 8px rgba(255,107,0,0.2);
+    }
+
+    .btn-secondary {
+      background: rgba(255,107,0,0.08);
+      color: var(--orange);
+      border: 2px solid rgba(255,107,0,0.2);
+      margin-top: 12px;
+    }
+
+    .warning {
+      text-align: center;
+      margin-top: 16px;
+      max-width: 320px;
+    }
+
+    .warning p {
+      font-size: 12px;
+      color: var(--gray);
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .warning span { color: var(--orange); font-weight: 800; }
+
+    /* CHECKING SCREEN */
+    .checking-wrap {
+      text-align: center;
+    }
+
+    .spinner {
+      width: 64px;
+      height: 64px;
+      border: 5px solid rgba(255,107,0,0.15);
+      border-top-color: var(--orange);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 24px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .checking-wrap h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .checking-wrap p {
+      font-size: 14px;
+      color: var(--gray);
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    /* ERROR SCREEN */
+    .error-icon {
+      font-size: 80px;
+      margin-bottom: 8px;
+      display: block;
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+
+    .wifi-icon {
+      font-size: 56px;
+      color: var(--orange);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .error-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--orange);
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .error-sub {
+      font-size: 15px;
+      color: var(--gray);
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .checklist-card {
+      width: 100%;
+      max-width: 360px;
+      background: var(--card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 16px 20px;
+      border: 1px solid rgba(255,107,0,0.15);
+      box-shadow: 0 8px 32px rgba(255,107,0,0.1);
+      margin-bottom: 24px;
+    }
+
+    .checklist-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--orange);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .check-item:last-child { border-bottom: none; }
+
+    .check-item span:first-child { font-size: 18px; }
+
+    .check-item p {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* CONNECTED - WebView */
+    #connectedScreen {
+      padding: 0;
+      justify-content: flex-start;
+    }
+
+    .webview-bar {
+      width: 100%;
+      background: white;
+      padding: calc(12px + var(--safe-top)) 16px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      flex-shrink: 0;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse-green 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse-green {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+    }
+
+    .webview-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .webview-url {
+      font-size: 11px;
+      color: var(--gray);
+      font-weight: 600;
+    }
+
+    .disconnect-btn {
+      background: rgba(255,107,0,0.1);
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--orange);
+      cursor: pointer;
+    }
+
+    iframe {
+      width: 100%;
+      flex: 1;
+      border: none;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- WELCOME SCREEN -->
+  <div class="screen active" id="welcomeScreen">
+    <div class="hero">
+      <span class="dog-emoji">🐕</span>
+      <h1>Run Dog Run</h1>
+      <p class="subtitle">GPS Tracker App</p>
+    </div>
+
+    <div class="steps-card">
+      <div class="step">
+        <span class="step-emoji">1️⃣</span>
+        <div class="step-text">
+          <h3>Enable WiFi</h3>
+          <p>Turn on WiFi in Settings</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-emoji">2️⃣</span>
+        <div class="step-text">
+          <h3>Connect to "RunDogRun"</h3>
+          <p>Go to Settings → WiFi</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-emoji">3️⃣</span>
+        <div class="step-text">
+          <h3>Return to App</h3>
+          <p>Tap "Check Connection" below</p>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="checkBtn" onclick="checkConnection()">
+      Check Connection
+    </button>
+
+    <div class="warning">
+      <p>⚠️ Make sure you're connected to the<br><span>"RunDogRun"</span> WiFi network</p>
+    </div>
+  </div>
+
+  <!-- CHECKING SCREEN -->
+  <div class="screen" id="checkingScreen">
+    <div class="checking-wrap">
+      <div class="spinner"></div>
+      <h2>Checking connection…</h2>
+      <p>Looking for your tracker</p>
+    </div>
+  </div>
+
+  <!-- ERROR SCREEN -->
+  <div class="screen" id="errorScreen">
+    <span class="wifi-icon">📡</span>
+    <span class="error-icon">🐕‍🦺</span>
+    <h2 class="error-title">Couldn't reach your tracker</h2>
+    <p class="error-sub">Did you connect to RunDogRun WiFi?</p>
+
+    <div class="checklist-card">
+      <p class="checklist-title">Make sure:</p>
+      <div class="check-item">
+        <span>✅</span>
+        <p>Connected to "RunDogRun" network</p>
+      </div>
+      <div class="check-item">
+        <span>✅</span>
+        <p>Tracker is powered on</p>
+      </div>
+      <div class="check-item">
+        <span>✅</span>
+        <p>You're within WiFi range</p>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="retryFromError()">
+      Try Again
+    </button>
+    <button class="btn btn-secondary" onclick="openWifiSettings()">
+      Open WiFi Settings
+    </button>
+  </div>
+
+  <!-- CONNECTED SCREEN -->
+  <div class="screen" id="connectedScreen">
+    <div class="webview-bar">
+      <div class="status-dot"></div>
+      <div>
+        <p class="webview-title">RunDogRun</p>
+        <p class="webview-url">192.168.4.1</p>
+      </div>
+      <button class="disconnect-btn" onclick="showScreen('welcomeScreen'); checkConnection()">Reconnect</button>
+    </div>
+    <iframe id="trackerFrame" src="" allow="geolocation"></iframe>
+  </div>
+
+  <script>
+    let checkInterval = null;
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function openWifiSettings() {
+      // Try all known iOS WiFi URL schemes in sequence
+      const schemes = ['App-Prefs:root=WIFI', 'prefs:root=WIFI', 'app-settings:root=WIFI'];
+      let i = 0;
+      function tryNext() {
+        if (i >= schemes.length) return;
+        window.location.href = schemes[i++];
+        setTimeout(tryNext, 800);
+      }
+      tryNext();
+    }
+
+    async function checkConnection() {
+      showScreen('checkingScreen');
+
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+
+        await fetch('http://192.168.4.1', {
+          signal: controller.signal,
+          mode: 'no-cors'
+        });
+
+        clearTimeout(timeout);
+        onConnected();
+      } catch (e) {
+        onError();
+      }
+    }
+
+    function onConnected() {
+      document.getElementById('trackerFrame').src = 'http://192.168.4.1';
+      showScreen('connectedScreen');
+
+      // Keep checking in background
+      if (checkInterval) clearInterval(checkInterval);
+      checkInterval = setInterval(async () => {
+        try {
+          const controller = new AbortController();
+          setTimeout(() => controller.abort(), 3000);
+          await fetch('http://192.168.4.1', { signal: controller.signal, mode: 'no-cors' });
+        } catch (e) {
+          clearInterval(checkInterval);
+          showScreen('errorScreen');
+        }
+      }, 5000);
+    }
+
+    function onError() {
+      showScreen('errorScreen');
+    }
+
+    function retryFromError() {
+      showScreen('welcomeScreen');
+      setTimeout(checkConnection, 400);
+    }
+
+    // Auto check on load
+    window.addEventListener('load', () => {
+      setTimeout(checkConnection, 800);
+    });
+
+    // Handle app coming back to foreground
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) checkConnection();
+    });
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>
